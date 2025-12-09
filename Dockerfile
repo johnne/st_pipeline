@@ -1,11 +1,5 @@
 FROM python:3.11-slim
 
-# Set environment variables
-ENV POETRY_VERSION=2.0.1 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_NO_INTERACTION=1 \
-    PATH="/root/.local/bin:$PATH"
-
 # Install system dependencies, Poetry, STAR, and Samtools
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -40,23 +34,22 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* 2.7.10b.zip STAR-2.7.10b samtools-1.17 samtools-1.17.tar.bz2
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN mkdir /usr/src/stpipeline
+COPY LICENSE /usr/src/stpipeline
+COPY README.md /usr/src/stpipeline
+COPY AUTHORS.md /usr/src/stpipeline
+COPY CHANGELOG.md /usr/src/stpipeline
+COPY docs /usr/src/stpipeline/docs
+COPY pyproject.toml /usr/src/stpipeline
+COPY src /usr/src/stpipeline/src
+COPY tests /usr/src/stpipeline/tests
 
-# Set working directory
+RUN pip install --quiet --upgrade pip && \
+    pip install --no-cache-dir --verbose /usr/src/stpipeline && \
+    rm -rf "/usr/src/stpipeline" && \
+    find /usr/local/lib/python3.13 \( -iname '*.c' -o -iname '*.pxd' -o -iname '*.pyd' -o -iname '__pycache__' \) -printf "\"%p\" " | \
+    xargs rm -rf {}
+
 WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml poetry.lock README.md /app/
-
-# Install dependencies using Poetry
-RUN poetry install --no-root --only main
-
-# Copy the entire project
-COPY . /app
-
-# Ensure scripts are executable
-RUN chmod +x /app/stpipeline/scripts/*.py
-
-# Set entrypoint for the container
-ENTRYPOINT ["poetry", "run"]
+CMD ["st_pipeline_run", "-h"]
