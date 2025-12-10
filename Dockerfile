@@ -47,7 +47,7 @@ COPY tests /usr/src/stpipeline/tests
 RUN pip install --quiet --upgrade pip && \
     pip install --no-cache-dir --verbose /usr/src/stpipeline && \
     rm -rf "/usr/src/stpipeline" && \
-    find /usr/local/lib/python3.13 \( -iname '*.c' -o -iname '*.pxd' -o -iname '*.pyd' -o -iname '__pycache__' \) -printf "\"%p\" " | \
+    find /usr/local/lib/python3.11 \( -iname '*.c' -o -iname '*.pxd' -o -iname '*.pyd' -o -iname '__pycache__' \) -printf "\"%p\" " | \
     xargs rm -rf {}
 
 WORKDIR /app
